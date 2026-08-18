@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hong Kong Observatory Weather Dashboard</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
+    }
+
+    /* Two-Column Grid Layout */
+    .dashboard-container {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 380px 1fr; /* Left column fixed, right column dynamic */
+      gap: 24px;
+    }
+
+    /* Shared Card Container */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 28px;
+    }
+
+    /* ================= LEFT COLUMN ================= */
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      justify-content: space-between;
+    }
+
+    .time-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Digital Clock Styling */
+    .time-section h1 {
+      font-size: 3.2rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      color: var(--accent-color);
+      line-height: 1;
+    }
+
+    /* Large Date Display */
+    .time-section #date {
+      font-size: 2.2rem; /* Significantly enlarged date font */
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.25;
+      margin-top: 4px;
+    }
+
+    .location-tag {
+      align-self: flex-start;
+      margin-top: 8px;
+      padding: 6px 14px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-color);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Left Current Weather Box */
+    .current-weather-summary {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .weather-icon-box {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+      flex-shrink: 0;
+    }
+
+    .weather-icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .temp-display {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .weather-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ================= RIGHT COLUMN ================= */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    /* Forecast Container */
+    .forecast-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      flex-grow: 1;
+    }
+
+    .forecast-title {
+      font-size: 1.1rem;
+      margin-bottom: 18px;
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .forecast-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .forecast-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .forecast-day {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .forecast-icon-box {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+
+    .forecast-temp {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .forecast-rh {
+      font-size: 0.75rem;
+      color: var(--accent-color);
+    }
+
+    /* Mobile Responsive View */
+    @media (max-width: 900px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+      .time-section #date {
+        font-size: 1.8rem;
+      }
+      .forecast-grid {
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    
+    <!-- LEFT COLUMN: Date & Time Focus -->
+    <div class="card left-column">
+      <div class="time-section">
+        <h1 id="clock">00:00:00</h1>
+        <div id="date">Loading date...</div>
+        <span class="location-tag">📍 Hong Kong (HKO)</span>
+      </div>
+
+      <div class="current-weather-summary">
+        <div class="weather-icon-box" id="current-icon-container">
+          <span id="current-icon-emoji">🌤️</span>
+        </div>
+        <div>
+          <div class="temp-display" id="current-temp">--°C</div>
+          <div class="weather-desc" id="weather-update-time">Loading live HKO data...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: HKO Weather Metrics & 9-Day Forecast -->
+    <div class="right-column">
+      
+      <!-- Metrics Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-label">Humidity</span>
+          <span class="metric-value" id="current-humidity">--%</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">UV Index</span>
+          <span class="metric-value" id="current-uv">--</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">HQ Temp</span>
+          <span class="metric-value" id="hko-headquarters-temp">--°C</span>
+        </div>
+      </div>
+
+      <!-- 9-Day Forecast Grid -->
+      <div class="forecast-section">
+        <h2 class="forecast-title">HKO 9-Day Weather Forecast</h2>
+        <div class="forecast-grid" id="forecast-container">
+          <!-- Forecast cards dynamically rendered -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // 1. Live Clock & Calendar Update
+    function updateClock() {
+      const now = new Date();
+      const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+      document.getElementById('clock').textContent = now.toLocaleTimeString([], timeOptions);
+      
+      const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('date').textContent = now.toLocaleDateString('en-US', dateOptions);
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // 2. Weather Emoji Fallback Map
+    function getFallbackEmoji(code) {
+      const codeNum = parseInt(code, 10);
+      if ([50, 51, 52, 70, 71, 72, 73, 74, 75, 76, 77].includes(codeNum)) return '☀️';
+      if ([53, 54].includes(codeNum)) return '🌤️';
+      if ([60, 61].includes(codeNum)) return '☁️';
+      if ([62, 63, 64].includes(codeNum)) return '🌧️';
+      if ([65].includes(codeNum)) return '⛈️';
+      return '🌤️';
+    }
+
+    // Dynamic Image Loader with automatic fallback to SVG/Emoji
+    function createIconElement(iconCode, altText, isLarge = false) {
+      const container = document.createElement('div');
+      container.className = isLarge ? 'weather-icon-box' : 'forecast-icon-box';
+
+      const img = document.createElement('img');
+      img.className = 'weather-icon-img';
+      img.alt = altText || 'Weather Icon';
+      img.src = `https://www.hko.gov.hk/images/HKO_m2M/pic${iconCode}.png`;
+      
+      img.onerror = function() {
+        container.innerHTML = `<span>${getFallbackEmoji(iconCode)}</span>`;
+      };
+
+      container.appendChild(img);
+      return container;
+    }
+
+    // 3. Fetch HKO Real-time Weather
+    async function fetchCurrentWeather() {
+      try {
+        const response = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en');
+        const data = await response.json();
+
+        if (data.temperature && data.temperature.data.length > 0) {
+          const hkoStation = data.temperature.data.find(st => st.place === "Hong Kong Observatory") || data.temperature.data[0];
+          document.getElementById('current-temp').textContent = `${hkoStation.value}°C`;
+          document.getElementById('hko-headquarters-temp').textContent = `${hkoStation.value}°C`;
+        }
+
+        if (data.humidity && data.humidity.data.length > 0) {
+          document.getElementById('current-humidity').textContent = `${data.humidity.data[0].value}%`;
+        }
+
+        if (data.uvindex && data.uvindex.data.length > 0) {
+          const uvVal = data.uvindex.data[0].value;
+          const uvDesc = data.uvindex.data[0].desc ? ` (${data.uvindex.data[0].desc})` : '';
+          document.getElementById('current-uv').textContent = `${uvVal}${uvDesc}`;
+        } else {
+          document.getElementById('current-uv').textContent = 'Low / N/A';
+        }
+
+        if (data.icon && data.icon.length > 0) {
+          const iconContainer = document.getElementById('current-icon-container');
+          iconContainer.innerHTML = '';
+          iconContainer.appendChild(createIconElement(data.icon[0], 'Current Weather', true));
+        }
+
+        document.getElementById('weather-update-time').textContent = `Updated: ${data.updateTime.substring(11, 16)}`;
+
+      } catch (error) {
+        console.error('Error fetching current weather:', error);
+        document.getElementById('weather-update-time').textContent = 'Unable to load HKO data';
+      }
+    }
+
+    // 4. Fetch HKO 9-Day Forecast
+    async function fetchForecast() {
+      try {
+        const response = await fetch('https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=en');
+        const data = await response.json();
+
+        const container = document.getElementById('forecast-container');
+        container.innerHTML = '';
+
+        if (data.weatherForecast && data.weatherForecast.length > 0) {
+          data.weatherForecast.forEach(day => {
+            const month = day.forecastDate.substring(4, 6);
+            const dateNum = day.forecastDate.substring(6, 8);
+            const formattedDate = `${dateNum}/${month}`;
+
+            const card = document.createElement('div');
+            card.className = 'forecast-card';
+            
+            const daySpan = document.createElement('span');
+            daySpan.className = 'forecast-day';
+            daySpan.textContent = `${day.week.substring(0, 3)} (${formattedDate})`;
+            
+            const iconElem = createIconElement(day.ForecastIcon, day.forecastWeather, false);
+
+            const tempSpan = document.createElement('span');
+            tempSpan.className = 'forecast-temp';
+            tempSpan.textContent = `${day.forecastMintemp.value}° - ${day.forecastMaxtemp.value}°C`;
+
+            const rhSpan = document.createElement('span');
+            rhSpan.className = 'forecast-rh';
+            rhSpan.textContent = `RH ${day.forecastMinrh.value}% - ${day.forecastMaxrh.value}%`;
+
+            card.appendChild(daySpan);
+            card.appendChild(iconElem);
+            card.appendChild(tempSpan);
+            card.appendChild(rhSpan);
+
+            container.appendChild(card);
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching forecast:', error);
+      }
+    }
+
+    fetchCurrentWeather();
+    fetchForecast();
+    setInterval(() => {
+      fetchCurrentWeather();
+      fetchForecast();
+    }, 600000);
+  </script>
+
+</body>
+</html>
